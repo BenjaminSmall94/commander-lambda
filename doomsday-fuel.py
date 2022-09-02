@@ -1,31 +1,49 @@
 def solution(m):
-    rows_denom = {}
-    terminal_states = {}
-    for idx, row in enumerate(m):
+    terminal_states = []
+    transition_matrix = []
+    for row_idx, row in enumerate(m):
         row_sum = sum(row)
-        rows_denom[idx] = row_sum
         if row_sum == 0:
-            terminal_states[idx] = (0, 1)
-    if terminal_states.get(0):
+            terminal_states.append(row_idx)
+        transition_row = []
+        for col_idx, col in enumerate(row):
+            if col == 0:
+                transition_row.append((col, 1))
+            else:
+                transition_row.append((col, max(row_sum, 1)))
+            if row_idx == col_idx:
+                transition_row[col_idx] = add_fractions((-1, 1), transition_row[col_idx])
+        transition_matrix.append(transition_row)
+    if terminal_states[0] == 0:
         output = [1]
         for _ in range(1, len(terminal_states)):
             output.append(0)
         output.append(1)
         return output
-    probabilities = find_probabilities(m, 0, terminal_states, rows_denom, (1, 1))
+    probabilities = {}
+    for row_idx in terminal_states:
+        probabilities[row_idx] = (find_probabilities(transition_matrix, row_idx))
     return format_probs(probabilities)
 
 
-def find_probabilities(m, row, terminal_states, rows_denom, prob):
-    for row_idx, num in enumerate(m[row]):
-        if num > 0:
-            if row_idx in terminal_states:
-                terminal_states[row_idx] = add_fractions(terminal_states[row_idx], (prob[0] * num, prob[1] * rows_denom[row]))
-                # terminal_states[row_idx] = (prob[0] * num, prob[1] * rows_denom[row])
-            else:
-                find_probabilities(m, row_idx, terminal_states, rows_denom, (prob[0] * num, prob[1] * rows_denom[row]))
-    return terminal_states
-
+def find_probabilities(transition_matrix, end_row_idx):
+    matrix_copy = [[col_val for col_val in row] for row in transition_matrix]
+    size = len(matrix_copy)
+    for i in range(size):
+        if i == end_row_idx:
+            matrix_copy[i].append((1, 1))
+        else:
+            matrix_copy[i].append((0, 1))
+    for row_idx in range(size - 1, -1, -1):
+        if matrix_copy[row_idx][row_idx] != (-1, 1):
+            make_negative_one(matrix_copy[row_idx], row_idx, size)
+        for row in range(size):
+            if row != row_idx:
+                multiplicand = matrix_copy[row][row_idx]
+                for col_idx in range(size):
+                    matrix_copy[row][col_idx] = add_fractions(matrix_copy[row][col_idx], multiply_fractions(multiplicand, (matrix_copy[row_idx][col_idx])))
+                matrix_copy[row][size] = add_fractions(matrix_copy[row][size], multiply_fractions(multiplicand, (matrix_copy[row_idx][size])))
+    return matrix_copy[0][size]
 
 def format_probs(probs):
     lcm = 1
@@ -39,6 +57,17 @@ def format_probs(probs):
     return output
 
 
+def make_negative_one(matrix_row, idx, size):
+    value = matrix_row[idx]
+    if value[0] > 0:
+        multiplicand = (-1 * value[1], value[0])
+    else:
+        multiplicand = (value[1], -1 * value[0])
+    for col_idx in range(idx + 1):
+        matrix_row[col_idx] = multiply_fractions(multiplicand, (matrix_row[col_idx]))
+    matrix_row[size] = multiply_fractions(multiplicand, (matrix_row[size]))
+
+
 def add_fractions(a, b):
     lcm = find_lcm(a[1], b[1])
     a_multiplicand = lcm / a[1]
@@ -48,7 +77,16 @@ def add_fractions(a, b):
     return dividend / gcd, lcm / gcd
 
 
+def multiply_fractions(a, b):
+    dividend = a[0] * b[0]
+    divisor = a[1] * b[1]
+    gcd = find_gcd(dividend, divisor)
+    return dividend / gcd, divisor / gcd
+
+
 def find_gcd(a, b):
+    a = abs(a)
+    b = abs(b)
     if a == 0 or b == 0:
         return max(a, b)
     else:
@@ -65,18 +103,30 @@ def find_lcm(a, b, gcd=None):
 
 
 if __name__ == "__main__":
-    x = [[0, 0, 0, 0, 0],
-         [0, 0, 1, 1, 1],
-         [0, 0, 0, 1, 1],
-         [0, 0, 0, 0, 1],
-         [0, 0, 0, 0, 1]]
+    # y = [[0, 1, 0, 0, 0, 1],
+    #      [4, 0, 0, 3, 2, 0],
+    #      [0, 0, 0, 0, 0, 0],
+    #      [0, 0, 0, 0, 0, 0],
+    #      [0, 0, 0, 0, 0, 0],
+    #      [0, 0, 0, 0, 0, 0]]
 
-    print(solution(x))
+    z = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 1, 6424231, 1, 1, 1],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [1, 1, 1, 432, 1, 1, 1, 1, 1, 1],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+         [1, 1, 3, 1234523, 1, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    print(solution(z))
     test_cases = False
+
     if test_cases:
-        y = [[0, 1, 0, 0, 0, 1],
-             [4, 0, 0, 3, 2, 0],
-             [0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0]]
+
+        x = [[0, 1, 0, 0, 0],
+             [0, 2, 0, 0, 1],
+             [0, 0, 0, 1, 1],
+             [0, 0, 0, 0, 1],
+             [0, 0, 0, 0, 0]]
