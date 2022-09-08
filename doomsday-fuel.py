@@ -23,7 +23,7 @@ def solution(m):
     probabilities = {}
     for row_idx in terminal_states:
         probabilities[row_idx] = (find_probabilities(transition_matrix, row_idx))
-    return format_probs(probabilities)
+    return format_answer(probabilities)
 
 
 def find_probabilities(transition_matrix, end_row_idx):
@@ -44,16 +44,17 @@ def find_probabilities(transition_matrix, end_row_idx):
                     matrix_copy[row][col_idx] = add_fractions(matrix_copy[row][col_idx], multiply_fractions(multiplicand, (matrix_copy[row_idx][col_idx])))
                 matrix_copy[row][size] = add_fractions(matrix_copy[row][size], multiply_fractions(multiplicand, (matrix_copy[row_idx][size])))
     return matrix_copy[0][size]
+# 830 / 1758
 
-def format_probs(probs):
+def format_answer(probs):
     lcm = 1
     for value in probs.values():
         lcm = find_lcm(lcm, value[1])
     output = []
     for key, value in probs.items():
         multiplicand = lcm / value[1]
-        output.append(value[0] * multiplicand)
-    output.append(lcm)
+        output.append(int(value[0] * multiplicand))
+    output.append(int(lcm))
     return output
 
 
@@ -110,23 +111,31 @@ if __name__ == "__main__":
     #      [0, 0, 0, 0, 0, 0],
     #      [0, 0, 0, 0, 0, 0]]
 
+    a = [[0, 1, 830, 927],
+         [0, 1, 14325, 555],
+         [0, 0, 0, 0],
+         [0, 0, 0, 0]]
+
     z = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-         [1, 1, 1, 1, 1, 1, 6424231, 1, 1, 1],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [1, 1, 1, 432, 1, 1, 1, 1, 1, 1],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [1, 1, 1, 1, 0, 1, 1, 1, 1, 1],
+         [1, 1, 1, 1, 1, 99, 22, 1, 23, 59],
+         [1, 1, 0, 0, 1, 101, 1, 597, 1, 1],
          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-         [1, 1, 3, 1234523, 1, 1, 1, 1, 1, 1],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-    print(solution(z))
-    test_cases = False
+    sol = solution(a)
+    print(sol)
+    print(sum(sol[:-1]))
+    print(sol[len(sol) - 1])
 
-    if test_cases:
+    # [824315, 919621, 1743936]
+    # [450404, 502479, 952883]
 
-        x = [[0, 1, 0, 0, 0],
-             [0, 2, 0, 0, 1],
-             [0, 0, 0, 1, 1],
-             [0, 0, 0, 0, 1],
-             [0, 0, 0, 0, 0]]
+    # x = [[0, 1, 0, 0, 1],
+    #      [0, 2, 0, 0, 1],
+    #      [0, 0, 0, 1, 1],
+    #      [0, 0, 0, 0, 1],
+    #      [0, 0, 0, 0, 0]]
